@@ -4,11 +4,15 @@
 
   const MOD_ID = "loilo-font-mod";
   if (window.__loiloFontModLoaded) {
-    window.__loiloFontModToggle = window.__loiloFontModToggle || function () {};
+    // Already loaded: just re-expose toggle and return
+    if (typeof window.__loiloFontModToggle === "function") {
+      return;
+    }
+    window.__loiloFontModToggle = function () {};
     return;
   }
   window.__loiloFontModLoaded = true;
-  console.log("[LoiLoNote Font MOD] loaded v1.0.2");
+  console.log("[LoiLoNote Font MOD] loaded v1.3.9");
 
   const SYSTEM_FONTS = [
     { name: "システム (sans-serif)", value: "sans-serif" },
@@ -44,10 +48,10 @@
   try { globalMode = localStorage.getItem(MOD_ID + "-global") !== "false"; } catch (e) {}
   // version-gated reset to clean defaults
   try {
-    if (localStorage.getItem(MOD_ID + "-version") !== "1.0.2") {
+    if (localStorage.getItem(MOD_ID + "-version") !== "1.3.9") {
       localStorage.setItem(MOD_ID + "-dark", "false");
       localStorage.setItem(MOD_ID + "-colorful", "false");
-      localStorage.setItem(MOD_ID + "-version", "1.0.2");
+      localStorage.setItem(MOD_ID + "-version", "1.3.9");
     }
   } catch (e) {}
   let darkMode = false;
@@ -153,6 +157,26 @@
     if (!el || !el.tagName) return true;
     const tag = el.tagName.toLowerCase();
     if (tag === "html" || tag === "body" || tag === "main") return true;
+    if (tag === "canvas" || tag === "svg" || tag === "img" || tag === "video" || tag === "picture") return true;
+    const elCls = String(el.className || "");
+    // Skip desktop/background/workspace/canvas elements
+    if (/desktop|background|wallpaper|backdrop|workspace|canvas|stage/i.test(elCls)) return true;
+    // Skip large background/container elements to avoid desktop background changes
+    try {
+      const r = el.getBoundingClientRect();
+      const vw = window.innerWidth || 1;
+      const vh = window.innerHeight || 1;
+      if (r.width * r.height > vw * vh * 0.15) return true;
+    } catch (e) {}
+    // Skip elements whose parent is already dark (avoid cascading)
+    try {
+      let parent = el.parentElement;
+      for (let i = 0; i < 3 && parent; i++) {
+        const pcbg = getComputedStyle(parent).backgroundColor;
+        if (pcbg && /rgb\(31,\s*31,\s*46\)/.test(pcbg)) return true;
+        parent = parent.parentElement;
+      }
+    } catch (e) {}
     if (tag === "img" || tag === "svg" || tag === "canvas" || tag === "video" || tag === "picture") return true;
     const cls = String(el.className || "");
     if (/desktop|background|wallpaper|backdrop/i.test(cls)) return true;
@@ -326,19 +350,18 @@ function revertDarkMode() {
     darkOverrides.clear();
   }
   function isNoteListView() {
-    if (/standardNoteList/.test(location.href) || /tab=/.test(location.search)) return true;
-    if (document.querySelector('.materialBox, .submissionListItemDisabled, [class*="submissionListItem"], .timelineBalloonContent, [class*="timelineBalloon"]')) return true;
-    return false;
+    // 全ページでダークモードを発動
+    return true;
   }
   function syncDarkModeToView() {
-    if (!darkMode || !isNoteListView()) {
+    if (!darkMode) {
       revertDarkMode();
       revertForceDarkPanels();
       const extra = document.getElementById(MOD_ID + "-darkextra");
       if (extra) extra.remove();
       return;
     }
-    scanAndDarken();
+    // CSS-only dark mode: always apply when dark mode is on (no view check to avoid flash)
     fixPopovers();
     let extra = document.getElementById(MOD_ID + "-darkextra");
     if (!extra) {
@@ -348,49 +371,41 @@ function revertDarkMode() {
       if (head) head.appendChild(extra);
     }
     extra.textContent = `
-      /* ノート一覧の部分のみダーク化 */
-      .focusScope, .courseNav, .coruseMenuNav, .menu, .timelinePanelNav, .courseMenuTabList, [class*="timelinePanel"],\n      .materialBox, .searchBox, [class*="searchBox"],\n      .materialBoxDialogDocumentCell, [class*="materialBoxDialogDocumentCell"],\n      .submissionListItemDisabled, [class*="submissionListItem"],\n      .timelineBalloonContent, [class*="timelineBalloon"],\n      .documentDetailContent, [class*="documentDetail"], .navBody, [class*="navBody"] {
+      body, html { background-color: #12264d !important; }
+      .courseNav, .coruseMenuNav, .menu, .timelinePanelNav,
+      .courseMenuTabList, [class*="timelinePanel"],
+      .materialBox, .searchBox, [class*="searchBox"],
+      .materialBoxDialogDocumentCell, [class*="materialBoxDialogDocumentCell"],
+      .submissionListItemDisabled, [class*="submissionListItem"],
+      .timelineBalloonContent, [class*="timelineBalloon"],
+      .documentDetailContent, [class*="documentDetail"],
+      .navBody, [class*="navBody"],
+      .courseListItem, .roundListItem,
+      .nav, [class*="navBody" i],
+      .navHeader, .navTranslucentHeaderGroup, [class*="navHeader" i], [class*="TranslucentHeader" i],
+      .navBar, [class*="navBar" i] {
         background-color: #1f1f2e !important;
         color: #e6e6e6 !important;
       }
-      .focusScope *:not(.courseMenuTab):not(.courseMenuTab *),
-      .courseNav *:not(.courseMenuTab):not(.courseMenuTab *),
-      .coruseMenuNav *:not(.courseMenuTab):not(.courseMenuTab *) {
-        color: #e6e6e6 !important;
+      .courseListItem, .roundListItem {
+        border: 1px solid #555 !important;
+        border-radius: 8px !important;
       }
-      .materialBox *,\n      .documentDetailContent *, [class*="documentDetail"] * {\n        color: #e6e6e6 !important;\n      }\n      .roundListSectionHeader, .ellipsisTextLineClamp, .ellipsisText {
+      .roundListSectionHeader, .ellipsisTextLineClamp, .ellipsisText {
         color: #e6e6e6 !important;
       }
       [class*="popover" i], [class*="picker" i], [class*="dropdown" i] {
         background-color: rgba(31, 31, 46, 0.92) !important;
         color: #e6e6e6 !important;
       }
-      .courseListItem, .roundListItem {
-        background-color: #1f1f2e !important;
-        color: #e6e6e6 !important;
-        border: 1px solid #555 !important;
-        border-radius: 8px !important;
-      }
-      [class*="back" i]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="Back"]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="return" i]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="Return"]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="close" i]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="Close"]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="arrow" i]:not([class*="icon" i]):not([class*="Icon" i]),
-      [class*="Arrow"]:not([class*="icon" i]):not([class*="Icon" i]) {
-        background-color: #1f1f2e !important;
-        color: #e6e6e6 !important;
-      }
-      .uiIcon[class*="close" i],
-      .navCloseButton .uiIcon {
+      .uiIcon[class*="close" i], .navCloseButton .uiIcon {
         background-color: #007aff !important;
         color: #007aff !important;
         filter: none !important;
       }
-      /* その他のアイコンは元の色を維持 */
-
+      /* デスクトップ/キャンバス/背景は完全に除外（一切変更しない） */
     `;
+
   }
   function applyDarkMode(on) {
     darkMode = !!on;
@@ -544,6 +559,10 @@ function revertDarkMode() {
     select.onchange = () => applyFont(select.value, { toSelection: false });
     panel.appendChild(select);
 
+    const status = document.createElement("div");
+    status.style.cssText = "margin-top:8px;font-size:12px;opacity:0.8;";
+    status.textContent = "準備完了";
+
     const btnRow = document.createElement("div");
     btnRow.style.cssText = "display:flex;gap:6px;margin-bottom:8px;";
     const applySelBtn = document.createElement("button");
@@ -561,12 +580,7 @@ function revertDarkMode() {
     btnRow.appendChild(applySelBtn);
     btnRow.appendChild(applyAllBtn);
     panel.appendChild(btnRow);
-
-    const status = document.createElement("div");
-    status.style.cssText = "margin-top:8px;font-size:12px;opacity:0.8;";
-    status.textContent = "準備完了";
     panel.appendChild(status);
-
 
 
 
@@ -685,26 +699,49 @@ function revertDarkMode() {
   let reapplyTimer = null;
   let uiTimer = null;
   let lastScan = 0;
+  let cleanupRegistered = false;
   const observer = new MutationObserver(() => {
+    // Immediately clean up any inline styles on desktop/canvas elements
+    // (prevents flash when new panels open)
+    if (darkMode) {
+      document.querySelectorAll(".focusScope.desktop, [class*='desktop'], .mainCanvas, canvas, [class*='a11yNote'], [class*='a11yMainCanvas']").forEach((el) => {
+        try {
+          if (el.style.backgroundColor && el.style.backgroundColor !== "") {
+            el.style.removeProperty("background-color");
+          }
+          if (el.style.color && el.style.color !== "") {
+            el.style.removeProperty("color");
+          }
+        } catch (e) {}
+      });
+    }
     if (uiTimer) clearTimeout(uiTimer);
     uiTimer = setTimeout(() => {
       injectFlashyStyle();
       if (darkMode) { try { darkenNarrowNavs(); } catch (e) {} }
-      if (darkMode && isNoteListView() && Date.now() - lastScan > 30000) {
-        lastScan = Date.now();
-        try { scanAndDarken(); } catch (e) {}
+      if (darkMode) {
         try { fixPopovers(); } catch (e) {}
-        try { forceDarkPanels(); } catch (e) {}
       }
-    }, 2000);
+    }, 1000);
   });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+
+  // Cleanup on page unload to prevent memory leaks
+  if (!cleanupRegistered) {
+    cleanupRegistered = true;
+    window.addEventListener("beforeunload", () => {
+      try { observer.disconnect(); } catch (e) {}
+      try { clearInterval(retryTimer); } catch (e) {}
+    });
+  }
 
   function injectEditorFontControl() {
     if (document.querySelector("." + MOD_ID + "-editorfont")) return;
     const anchor = document.querySelector('[class*="editorTextPopoverSize"]')
                 || document.querySelector('[class*="editorTextColorButtonLabel"]')
-                || document.querySelector('[class*="editorTextButton"]');
+                || document.querySelector('[class*="editorTextButton"]')
+                || document.querySelector('[class*="editorText"]')
+                || document.querySelector('[class*="toolbar"] button');
     if (!anchor) return;
     let container = anchor.parentElement;
     for (let i = 0; i < 4 && container; i++) {
@@ -842,22 +879,16 @@ function revertDarkMode() {
     injectFlashyStyle();
     if (darkMode) { try { darkenNarrowNavs(); } catch (e) {} }
     if (darkMode) {
-      if (isNoteListView()) {
-        if (location.href !== lastDarkUrl) { revertDarkMode(); revertForceDarkPanels(); lastDarkUrl = location.href; }
-        lastScan = Date.now();
-        scanAndDarken();
-        fixPopovers();
-        forceDarkPanels();
-      } else {
-        revertDarkMode();
-        revertForceDarkPanels();
-        const extra = document.getElementById(MOD_ID + "-darkextra");
-        if (extra) extra.remove();
+      if (location.href !== lastDarkUrl) { lastDarkUrl = location.href; }
+      fixPopovers();
+      // Ensure darkextra CSS is always present
+      if (!document.getElementById(MOD_ID + "-darkextra")) {
+        syncDarkModeToView();
       }
     } else {
       injectFlashyStyle();
     }
-  }, 20000);
+  }, 15000);
 
   window.loiloFontMod = { applyFont, togglePanel, current: () => currentFont };
 })();

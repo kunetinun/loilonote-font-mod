@@ -13,7 +13,7 @@
   const MOD_ID = "loilo-font-mod";
   if (window.__loiloFontModLoaded) return;
   window.__loiloFontModLoaded = true;
-  console.log("[LoiLoNote Font MOD] loaded v1.0.2");
+  console.log("[LoiLoNote Font MOD] loaded v1.3.9");
 
   // ---------- Font list ----------
   const SYSTEM_FONTS = [
@@ -67,10 +67,10 @@
   let currentFont = localStorage.getItem(STORAGE_KEY) || "Noto Sans JP";
   let globalMode = localStorage.getItem(MOD_ID + "-global") !== "false";
   try {
-    if (localStorage.getItem(MOD_ID + "-version") !== "1.0.2") {
+    if (localStorage.getItem(MOD_ID + "-version") !== "1.3.9") {
       localStorage.setItem(MOD_ID + "-dark", "false");
       localStorage.setItem(MOD_ID + "-colorful", "false");
-      localStorage.setItem(MOD_ID + "-version", "1.0.2");
+      localStorage.setItem(MOD_ID + "-version", "1.3.9");
     }
   } catch (e) {}
   let darkMode = localStorage.getItem(MOD_ID + "-dark") === "true";
@@ -330,9 +330,8 @@ function revertDarkMode() {
     darkOverrides.clear();
   }
   function isNoteListView() {
-    if (/standardNoteList/.test(location.href) || /tab=/.test(location.search)) return true;
-    if (document.querySelector('.materialBox, .submissionListItemDisabled, [class*="submissionListItem"], .timelineBalloonContent, [class*="timelineBalloon"]')) return true;
-    return false;
+    // 全ページでダークモードを発動
+    return true;
   }
   function syncDarkModeToView() {
     if (!darkMode || !isNoteListView()) {
