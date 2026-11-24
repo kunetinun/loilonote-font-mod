@@ -12,7 +12,7 @@
     return;
   }
   window.__loiloFontModLoaded = true;
-  console.log("[LoiLoNote Font MOD] loaded v1.3.10");
+  console.log("[LoiLoNote Font MOD] loaded v1.3.11");
 
   const SYSTEM_FONTS = [
     { name: "システム (sans-serif)", value: "sans-serif" },
@@ -48,10 +48,10 @@
   try { globalMode = localStorage.getItem(MOD_ID + "-global") !== "false"; } catch (e) {}
   // version-gated reset to clean defaults
   try {
-    if (localStorage.getItem(MOD_ID + "-version") !== "1.3.10") {
+    if (localStorage.getItem(MOD_ID + "-version") !== "1.3.11") {
       localStorage.setItem(MOD_ID + "-dark", "false");
       localStorage.setItem(MOD_ID + "-colorful", "false");
-      localStorage.setItem(MOD_ID + "-version", "1.3.10");
+      localStorage.setItem(MOD_ID + "-version", "1.3.11");
     }
   } catch (e) {}
   let darkMode = false;
@@ -810,21 +810,18 @@ function revertDarkMode() {
   function injectFlashyStyle() {
     const old = document.getElementById(MOD_ID + "-flashy");
     if (!colorfulMode || darkMode) { if (old) old.remove(); return; }
-    if (old && old.dataset.v === "1.3.10") return;
+    if (old && old.dataset.v === "1.3.11") return;
     if (old) old.remove();
     const el = document.createElement("style");
     el.id = MOD_ID + "-flashy";
-    el.dataset.v = "1.3.10";
+    el.dataset.v = "1.3.11";
     el.textContent = `
       html, body {
-        background:
-          radial-gradient(circle at 20% 30%, rgba(255,0,255,0.6) 0%, transparent 40%),
-          radial-gradient(circle at 80% 70%, rgba(0,255,255,0.6) 0%, transparent 40%),
-          radial-gradient(circle at 50% 50%, rgba(255,255,0,0.4) 0%, transparent 50%),
-          linear-gradient(135deg, #ff0080, #8000ff, #0080ff, #00ff80, #ff8000) !important;
-        background-size: 100% 100%, 100% 100%, 100% 100%, 300% 300% !important;
-        animation: loiloFlashyBg 5s ease infinite !important;
+        background: linear-gradient(135deg, #ff0080, #8000ff, #0080ff, #00ff80, #ff8000, #ff0080) !important;
+        background-size: 300% 300% !important;
+        animation: loiloFlashyBg 6s ease infinite !important;
       }
+      @keyframes loiloFlashyBg { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
       @keyframes loiloFlashyBg {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -838,13 +835,16 @@ function revertDarkMode() {
       div { color: #ff69b4 !important; }
       section { color: #00ff7f !important; }
       nav { color: #ffa500 !important; }
-      div { background: rgba(255, 0, 255, 0.30) !important; border: 4px dashed #00ff00 !important; box-shadow: 0 0 16px #ff00ff !important; border-radius: 20px 4px 20px 4px !important; animation: loiloPulse 2s ease-in-out infinite !important; }
-      section { background: rgba(0, 255, 255, 0.30) !important; border: 4px dotted #ff0000 !important; box-shadow: 0 0 16px #00ffff !important; border-radius: 4px 20px 4px 20px !important; animation: loiloWobble 1.5s ease-in-out infinite alternate !important; }
-      article { background: rgba(255, 255, 0, 0.30) !important; border: 4px ridge #0000ff !important; box-shadow: 0 0 16px #ffff00 !important; border-radius: 12px !important; animation: loiloBounce 0.8s ease infinite alternate !important; }
-      main { background: rgba(0, 255, 0, 0.25) !important; border: 4px double #ff00ff !important; box-shadow: 0 0 16px #00ff00 !important; border-radius: 30px !important; }
-      aside { background: rgba(255, 165, 0, 0.30) !important; border: 4px groove #00ffff !important; box-shadow: 0 0 16px #ffa500 !important; border-radius: 8px 24px 8px 24px !important; }
-      nav { background: rgba(75, 0, 130, 0.30) !important; border: 4px outset #ffff00 !important; box-shadow: 0 0 16px #4b0082 !important; border-radius: 16px !important; animation: loiloSpin 8s linear infinite !important; }
-      header, footer { background: rgba(255, 20, 147, 0.35) !important; border: 4px inset #00ff00 !important; box-shadow: 0 0 16px #ff1493 !important; border-radius: 10px !important; animation: loiloPulse 1.5s ease-in-out infinite !important; }
+      div { background: rgba(255, 0, 255, 0.85) !important; border: 4px dashed #00ff00 !important; box-shadow: 0 0 16px #ff00ff !important; border-radius: 20px 4px 20px 4px !important; animation: loiloPulse 2s ease-in-out infinite !important; }
+      div:nth-child(2n) { background: rgba(0, 255, 255, 0.85) !important; border-color: #ff0000 !important; box-shadow: 0 0 16px #00ffff !important; }
+      div:nth-child(3n) { background: rgba(255, 255, 0, 0.85) !important; border-color: #0000ff !important; box-shadow: 0 0 16px #ffff00 !important; border-radius: 12px !important; }
+      div:nth-child(5n) { background: rgba(0, 255, 0, 0.85) !important; border-color: #ff00ff !important; box-shadow: 0 0 16px #00ff00 !important; border-radius: 30px !important; }
+      section { background: rgba(255, 165, 0, 0.85) !important; border: 4px dotted #ff0000 !important; box-shadow: 0 0 16px #ffa500 !important; border-radius: 4px 20px 4px 20px !important; animation: loiloWobble 1.5s ease-in-out infinite alternate !important; }
+      article { background: rgba(75, 0, 130, 0.85) !important; border: 4px ridge #ffff00 !important; box-shadow: 0 0 16px #4b0082 !important; border-radius: 12px !important; animation: loiloBounce 0.8s ease infinite alternate !important; }
+      main { background: rgba(255, 20, 147, 0.85) !important; border: 4px double #00ff00 !important; box-shadow: 0 0 16px #ff1493 !important; border-radius: 30px !important; }
+      aside { background: rgba(0, 191, 255, 0.85) !important; border: 4px groove #ffff00 !important; box-shadow: 0 0 16px #00bfff !important; border-radius: 8px 24px 8px 24px !important; }
+      nav { background: rgba(50, 205, 50, 0.85) !important; border: 4px outset #ff00ff !important; box-shadow: 0 0 16px #32cd32 !important; border-radius: 16px !important; animation: loiloSpin 8s linear infinite !important; }
+      header, footer { background: rgba(255, 69, 0, 0.85) !important; border: 4px inset #00ffff !important; box-shadow: 0 0 16px #ff4500 !important; border-radius: 10px !important; animation: loiloPulse 1.5s ease-in-out infinite !important; }
       @keyframes loiloPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
       @keyframes loiloWobble { 0% { transform: rotate(-2deg); } 100% { transform: rotate(2deg); } }
       @keyframes loiloBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-3px); } }
