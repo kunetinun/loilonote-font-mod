@@ -13,7 +13,7 @@
   const MOD_ID = "loilo-font-mod";
   if (window.__loiloFontModLoaded) return;
   window.__loiloFontModLoaded = true;
-  console.log("[LoiLoNote Font MOD] loaded v1.3.9");
+  console.log("[LoiLoNote Font MOD] loaded v1.3.10");
 
   // ---------- Font list ----------
   const SYSTEM_FONTS = [
@@ -67,10 +67,10 @@
   let currentFont = localStorage.getItem(STORAGE_KEY) || "Noto Sans JP";
   let globalMode = localStorage.getItem(MOD_ID + "-global") !== "false";
   try {
-    if (localStorage.getItem(MOD_ID + "-version") !== "1.3.9") {
+    if (localStorage.getItem(MOD_ID + "-version") !== "1.3.10") {
       localStorage.setItem(MOD_ID + "-dark", "false");
       localStorage.setItem(MOD_ID + "-colorful", "false");
-      localStorage.setItem(MOD_ID + "-version", "1.3.9");
+      localStorage.setItem(MOD_ID + "-version", "1.3.10");
     }
   } catch (e) {}
   let darkMode = localStorage.getItem(MOD_ID + "-dark") === "true";
@@ -945,32 +945,45 @@ function revertDarkMode() {
   function injectFlashyStyle() {
     const old = document.getElementById(MOD_ID + "-flashy");
     if (!colorfulMode || darkMode) { if (old) old.remove(); return; }
-    if (old) return;
+    if (old && old.dataset.v === "1.3.10") return;
+    if (old) old.remove();
     const el = document.createElement("style");
     el.id = MOD_ID + "-flashy";
+    el.dataset.v = "1.3.10";
     el.textContent = `
       html, body {
-        background: linear-gradient(135deg, #ff00ff, #00ffff, #ffff00, #ff0000, #00ff00, #0000ff) !important;
-        background-size: 400% 400% !important;
-        animation: loiloFlashyBg 3s ease infinite !important;
+        background:
+          radial-gradient(circle at 20% 30%, rgba(255,0,255,0.6) 0%, transparent 40%),
+          radial-gradient(circle at 80% 70%, rgba(0,255,255,0.6) 0%, transparent 40%),
+          radial-gradient(circle at 50% 50%, rgba(255,255,0,0.4) 0%, transparent 50%),
+          linear-gradient(135deg, #ff0080, #8000ff, #0080ff, #00ff80, #ff8000) !important;
+        background-size: 100% 100%, 100% 100%, 100% 100%, 300% 300% !important;
+        animation: loiloFlashyBg 5s ease infinite !important;
       }
       @keyframes loiloFlashyBg {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
       }
-      * {
-        color: #ff00ff !important;
-        font-family: "Comic Sans MS", "Papyrus", cursive !important;
-        text-shadow: 2px 2px 0 #00ffff, 4px 4px 0 #ffff00 !important;
-        border-color: #ff1493 !important;
-      }
-      div, section, article, main, aside, nav, header, footer {
-        background: rgba(255, 0, 255, 0.35) !important;
-        border: 3px dashed #00ff00 !important;
-        box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff !important;
-        border-radius: 25px !important;
-      }
+      * { font-family: "Comic Sans MS", "Papyrus", "Marker Felt", cursive !important; border-color: #ff1493 !important; }
+      p, span, li, td, label { color: #ff00ff !important; text-shadow: 2px 2px 0 #00ffff !important; }
+      h1, h2, h3 { color: #ffff00 !important; text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #0000ff !important; }
+      h4, h5, h6 { color: #00ffff !important; text-shadow: 2px 2px 0 #ff00ff !important; }
+      a, button { color: #000 !important; text-shadow: none !important; }
+      div { color: #ff69b4 !important; }
+      section { color: #00ff7f !important; }
+      nav { color: #ffa500 !important; }
+      div { background: rgba(255, 0, 255, 0.30) !important; border: 4px dashed #00ff00 !important; box-shadow: 0 0 16px #ff00ff !important; border-radius: 20px 4px 20px 4px !important; animation: loiloPulse 2s ease-in-out infinite !important; }
+      section { background: rgba(0, 255, 255, 0.30) !important; border: 4px dotted #ff0000 !important; box-shadow: 0 0 16px #00ffff !important; border-radius: 4px 20px 4px 20px !important; animation: loiloWobble 1.5s ease-in-out infinite alternate !important; }
+      article { background: rgba(255, 255, 0, 0.30) !important; border: 4px ridge #0000ff !important; box-shadow: 0 0 16px #ffff00 !important; border-radius: 12px !important; animation: loiloBounce 0.8s ease infinite alternate !important; }
+      main { background: rgba(0, 255, 0, 0.25) !important; border: 4px double #ff00ff !important; box-shadow: 0 0 16px #00ff00 !important; border-radius: 30px !important; }
+      aside { background: rgba(255, 165, 0, 0.30) !important; border: 4px groove #00ffff !important; box-shadow: 0 0 16px #ffa500 !important; border-radius: 8px 24px 8px 24px !important; }
+      nav { background: rgba(75, 0, 130, 0.30) !important; border: 4px outset #ffff00 !important; box-shadow: 0 0 16px #4b0082 !important; border-radius: 16px !important; animation: loiloSpin 8s linear infinite !important; }
+      header, footer { background: rgba(255, 20, 147, 0.35) !important; border: 4px inset #00ff00 !important; box-shadow: 0 0 16px #ff1493 !important; border-radius: 10px !important; animation: loiloPulse 1.5s ease-in-out infinite !important; }
+      @keyframes loiloPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+      @keyframes loiloWobble { 0% { transform: rotate(-2deg); } 100% { transform: rotate(2deg); } }
+      @keyframes loiloBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-3px); } }
+      @keyframes loiloSpin { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
       button, a, input, select, textarea {
         background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #0000ff) !important;
         color: #000 !important;
